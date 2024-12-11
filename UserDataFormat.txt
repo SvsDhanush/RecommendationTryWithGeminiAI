@@ -1,0 +1,24 @@
+{
+	user_id: 1,
+	gender: male/female/others,
+	age: 23
+	order_history: [{'products': ["LIST OF PRODUCT IDs"], 'total': 23567}, ...],
+	user_behavior: {
+		time-spend: {
+			'TV': 00:10:03 // Time in HH:MM:SS format
+			'Audio': 00:04:26
+			'Camera': 00:00:03
+		},
+		search-query: [LIST OF ITEMs SEARCHED],
+		visit-count: {
+			'TV': 21 // No of times users have visited the particular page
+			'Audio': 14
+			'Camera': 1
+		},
+		filter-used: { 
+			price: {'high-to-low': 3, 'low-to-high': 10}, // The count reflect the no of time a particular filter option was selected
+			latest: 4,
+			rating: 8
+		}
+	}
+}
