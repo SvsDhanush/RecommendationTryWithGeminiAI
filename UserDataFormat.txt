@@ -22,3 +22,10 @@
 		}
 	}
 }
+<<<<<<< HEAD
+
+-------------------------------------------
+
+To activate venv - .\.venv\Scripts\activate
+=======
+>>>>>>> 3bfceb92f76674ea96fad4705ec67c9efac6b82c
