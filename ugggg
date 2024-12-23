@@ -1,0 +1,194 @@
+I'll help you adapt the code for Google AI Studio (Gemini) and provide step-by-step instructions. Here's a comprehensive guide:
+
+1. First, you'll need to modify the code to use Google's Gemini API instead of OpenAI:
+
+
+
+```python
+import os
+import streamlit as st
+import pandas as pd
+import google.generativeai as genai
+from dotenv import load_dotenv
+from langchain_community.vectorstores import FAISS
+from langchain_community.embeddings import HuggingFaceEmbeddings
+
+# Load environment variables
+load_dotenv()
+
+# Configure Google AI Studio API
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+
+def process_data(refined_df):
+    """
+    Process the refined dataset and create the vector store.
+    
+    Args:
+        refined_df (pd.DataFrame): Preprocessed dataset DataFrame.
+        
+    Returns:
+        vectorstore (FAISS): Vector store containing the processed data.
+    """
+    # Combine product information
+    refined_df['combined_info'] = refined_df.apply(
+        lambda row: f"Product ID: {row['pid']}. "
+                    f"Product Name: {row['product_name']}. "
+                    f"Primary Category: {row['primary_category']}. "
+                    f"Retail Price: ${row['retail_price']}. "
+                    f"Brand: {row['brand']}. "
+                    f"Gender: {row['gender']}", 
+        axis=1
+    )
+
+    # Use HuggingFace embeddings as an alternative to OpenAI
+    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    
+    # Create vector store
+    vectorstore = FAISS.from_texts(
+        refined_df['combined_info'].tolist(), 
+        embeddings
+    )
+
+    return vectorstore
+
+def get_gemini_recommendations(department, category, brand, price):
+    """
+    Generate product recommendations using Gemini API.
+    
+    Args:
+        department (str): Product department
+        category (str): Product category
+        brand (str): Product brand
+        price (str): Maximum price range
+    
+    Returns:
+        str: Recommendation response
+    """
+    # Configure Gemini model
+    model = genai.GenerativeModel('gemini-pro')
+    
+    # Create prompt for recommendations
+    prompt = f"""
+    Act as a product recommendation assistant. 
+    Suggest three similar products with the following constraints:
+    
+    Product Department: {department}
+    Product Category: {category}
+    Product Brand: {brand}
+    Maximum Price Range: {price}
+    
+    For each product, provide:
+    1. Full Product Name
+    2. Category
+    3. Exact Price
+    4. Brief Description
+    5. Availability Status
+    
+    Recommend products that closely match the input criteria.
+    """
+    
+    # Generate recommendations
+    response = model.generate_content(prompt)
+    return response.text
+
+def display_product_recommendation(refined_df):
+    """
+    Streamlit interface for product recommendations.
+    
+    Args:
+        refined_df (pd.DataFrame): Preprocessed dataset DataFrame.
+    """
+    st.title("🛍️ Smart Product Recommender")
+    
+    # Input fields
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        department = st.text_input("Product Department", placeholder="e.g., Electronics")
+        category = st.text_input("Product Category", placeholder="e.g., Smartphones")
+    
+    with col2:
+        brand = st.text_input("Product Brand", placeholder="e.g., Apple")
+        price = st.text_input("Maximum Price Range", placeholder="e.g., $1000")
+    
+    # Recommendation button
+    if st.button("Get Recommendations", type="primary"):
+        with st.spinner('Generating personalized recommendations...'):
+            # Get recommendations
+            recommendations = get_gemini_recommendations(
+                department, category, brand, price
+            )
+            
+            # Display recommendations
+            st.subheader("🌟 Recommended Products")
+            st.write(recommendations)
+
+# Main Streamlit app
+def main():
+    # Load your refined dataframe here
+    refined_df = pd.read_csv('your_product_dataset.csv')  # Replace with your actual data loading method
+    display_product_recommendation(refined_df)
+
+if __name__ == "__main__":
+    main()
+
+```
+
+2. Setup Instructions for Google AI Studio:
+
+### Prerequisite Steps:
+1. Create a Google Cloud Account
+   - Go to https://cloud.google.com/
+   - Sign up or log in
+   - Create a new project
+
+2. Enable Gemini API
+   - Navigate to Google AI Studio (https://makersuite.google.com/app/apikey)
+   - Click "Get API Key"
+   - Create a new API key
+
+3. Install Required Libraries
+```bash
+pip install streamlit google-generativeai python-dotenv pandas langchain-community sentence-transformers
+```
+
+4. Create a `.env` file in your project directory:
+```
+GOOGLE_API_KEY=your_api_key_here
+```
+
+### Project Structure:
+```
+project_folder/
+│
+├── recommendation.py     # Main script
+├── .env                  # Environment variables
+└── your_product_dataset.csv  # Your product data
+```
+
+### Key Differences from Original Script:
+1. Replaced OpenAI with Google's Gemini API
+2. Used HuggingFace embeddings instead of OpenAI embeddings
+3. Simplified vector store creation
+4. Created a more flexible recommendation function
+5. Added more Streamlit UI enhancements
+
+### Deployment Recommendations:
+- For local testing: `streamlit run recommendation.py`
+- For production: Consider Streamlit sharing or Google Cloud Run
+
+### Additional Customization Tips:
+- Modify the `get_gemini_recommendations()` function to refine recommendation logic
+- Adjust the Streamlit UI to match your specific design preferences
+- Implement error handling for API calls
+- Add caching mechanisms for better performance
+
+### Learning Resources:
+1. Google AI Studio Documentation
+2. Streamlit Official Tutorials
+3. Gemini API Quick Start Guide
+
+### Potential Improvements:
+- Add more sophisticated filtering
+- Implement user preference learning
+- Create a more interactive recommendation system
